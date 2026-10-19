@@ -1,0 +1,20 @@
+name: Experiment
+description: Record one reproducible experiment
+title: '[experiment] '
+body:
+  - type: textarea
+    id: setup
+    attributes:
+      label: Setup
+      description: Commit, dataset/split, gate mode, seed, precision and complete command
+    validations:
+      required: true
+  - type: textarea
+    id: results
+    attributes:
+      label: Evidence
+      description: Base/Novel/HM, trainable parameters, time, GPU peak memory and completion status. Redact local/account details.
+  - type: textarea
+    id: interpretation
+    attributes:
+      label: Interpretation and remaining checks
