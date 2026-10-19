@@ -51,4 +51,3 @@ tanh 饱和会减小梯度；半精度会有量化误差，小门控变化可能
 - [MaPLe 官方代码](https://github.com/muzairkhattak/multimodal-prompt-learning)
 - [MaPLe 原论文](https://arxiv.org/abs/2210.03117)
 
-MaPLe 为 CVPR 2023，当前课程发生于 2026 年；“近三年”是否涵盖 2023 需要按教师口径确认。

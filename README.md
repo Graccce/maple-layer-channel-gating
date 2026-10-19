@@ -62,4 +62,3 @@ done
 
 本项目基于官方 MaPLe commit `69bce21ae8eda80ad6187534b2dce09cf6c59e17` 的完整源码快照。保留 [MIT LICENSE](LICENSE) 和 [原始 README](docs/UPSTREAM_README.md)，不把上游成果归为本项目原创。完整来源和 fixture 校验见 [UPSTREAM.md](UPSTREAM.md)。
 
-MaPLe 为 CVPR 2023；课程“近三年”的口径需另行确认。

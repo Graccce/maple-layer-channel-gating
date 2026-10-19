@@ -9,6 +9,6 @@
 - [ ] OxfordPets five-epoch paired seeds 1/2/3
 - [ ] DTD data preparation and paired experiments
 - [ ] Fixed-one and affine-folding ablations
-- [ ] Related-work and course publication-year eligibility checks
+- [ ] Related-work checks
 
 Track actual work in repository Issues. Check an item only after preserving its test or experiment evidence. No automatic GPU training is scheduled.
