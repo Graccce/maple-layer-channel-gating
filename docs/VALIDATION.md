@@ -10,4 +10,8 @@ The publication changes fix the baseline test's reference: a checksummed upstrea
 
 The revised publication test suite was actually rerun in the same AutoDL CPU environment: 12 tests passed in 1.908 seconds. The new dependency-free repository checks and Python syntax compilation also passed locally. Whitespace diagnostics on the initial full source import include existing upstream formatting; they are not runtime failures.
 
-Not yet verified: full CLIP CUDA inference/backward, CUDA fp16/AMP equivalence, actual dataset training/evaluation of the new gates, or full GPU interruption/resume. See Issues and EXPERIMENTS.md.
+## 2026-10-20 GPU and formal experiments
+
+13 CPU tests passed in 1.708 seconds, including the new exact-count analyzer and scalar/channel projection-folding test. Real CLIP CUDA fp16 smoke passed in all three modes with exact identity-initialization logits, finite backward/updates and frozen encoders. All three OxfordPets one-epoch smoke runs and nine five-epoch paired formal runs completed; independent Base/Novel evaluation loaded epoch 5. Finite checkpoints, identical frozen backbones, source hashes and 15 preserved original files were verified. See [report](RESULTS_2026-10-20.md) and its machine-readable evidence.
+
+Not yet verified: CUDA AMP/full-fp32 equivalence, full GPU interruption/resume, DTD experiments, fixed-one ablation and full-model folded-checkpoint evaluation. The float64 fold check covers prompt projections only. Static CI does not execute research CPU/GPU tests.

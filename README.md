@@ -2,7 +2,7 @@
 
 深度学习课程研究项目：复现 [MaPLe (CVPR 2023)](https://github.com/muzairkhattak/multimodal-prompt-learning)，在深层文本提示的视觉投影后增加恒等初始化的静态门控。
 
-**当前状态：实现与 CPU 轻量测试完成，完整 CLIP GPU 验证和正式准确率实验待运行。没有新方法性能提升或首创性结论。**
+**当前状态：13 项 CPU 测试、三模式真实 CLIP GPU smoke、OxfordPets 三模式 × 三种子正式实验已完成。Channel 平均 HM 为 96.7439 ± 0.2678%，相对 none 高 0.1536 个百分点，但 Novel 均值略降。详见 [实测报告](docs/RESULTS_2026-10-20.md)；DTD 与后续消融尚未运行。**
 
 ## 方法
 
@@ -61,4 +61,3 @@ done
 ## 来源与许可证
 
 本项目基于官方 MaPLe commit `69bce21ae8eda80ad6187534b2dce09cf6c59e17` 的完整源码快照。保留 [MIT LICENSE](LICENSE) 和 [原始 README](docs/UPSTREAM_README.md)，不把上游成果归为本项目原创。完整来源和 fixture 校验见 [UPSTREAM.md](UPSTREAM.md)。
-

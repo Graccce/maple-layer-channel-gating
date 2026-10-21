@@ -19,4 +19,4 @@ The same-epoch checkpoint is evaluated on both base and novel test subsets. Vali
 
 Hypotheses may fail. A useful next ablation is gate fixed at 1; frozen projection, alternative gate LR, and gate regularization are separate diagnostic experiments and must not be silently mixed into the primary comparison. Fold a trained gate into W,b to test the affine equivalence. Record layer-wise gate distributions and saturation, without treating additional parameters as additional expressiveness.
 
-No formal results are available in this repository yet.
+OxfordPets three-mode, three-seed formal results are available in the [2026-10-20 report](RESULTS_2026-10-20.md). Use `analyze_gating_runs.py RUN_ROOT --epoch 5 --output NEW_FILE.json` for exact correct/total statistics and projection-level gate diagnostics; the older `summarize_gating.py` uses displayed rounded accuracies. DTD and full-model folding remain pending.
