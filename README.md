@@ -2,7 +2,7 @@
 
 深度学习课程研究项目：复现 [MaPLe (CVPR 2023)](https://github.com/muzairkhattak/multimodal-prompt-learning)，在深层文本提示的视觉投影后增加恒等初始化的静态门控。
 
-**当前状态：13 项 CPU 测试、三模式真实 CLIP GPU smoke、OxfordPets 三模式 × 三种子正式实验已完成。Channel 平均 HM 为 96.7439 ± 0.2678%，相对 none 高 0.1536 个百分点，但 Novel 均值略降。详见 [实测报告](docs/RESULTS_2026-10-20.md)；DTD 与后续消融尚未运行。**
+**当前状态：14 项 CPU 测试、三模式真实 CLIP GPU smoke、OxfordPets 三模式 × 三种子正式实验已完成。Channel 平均 HM 为 96.7439 ± 0.2678%，相对 none 高 0.1536 个百分点，但 Novel 均值略降。详见 [实测报告](docs/RESULTS_2026-10-20.md)；已完成 seed-1 固定门控及完整 CLIP 折叠[消融](docs/ABLATIONS_2026-10-21.md)；DTD 数据准备受网络阻碍，尚未训练。**
 
 ## 方法
 

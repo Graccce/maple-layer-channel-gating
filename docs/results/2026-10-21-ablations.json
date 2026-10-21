@@ -1,0 +1,134 @@
+{
+  "fixed_one": [
+    {
+      "mode": "scalar",
+      "seed": 1,
+      "gates_all_zero": true,
+      "shared_state_keys": 328,
+      "shared_state_exactly_matches_none": true,
+      "mismatched_keys": [],
+      "base": {
+        "correct": 1794,
+        "total": 1881,
+        "accuracy": 95.3748006
+      },
+      "novel": {
+        "correct": 1741,
+        "total": 1788,
+        "accuracy": 97.3713647
+      },
+      "harmonic_mean": 96.3627419
+    },
+    {
+      "mode": "channel",
+      "seed": 1,
+      "gates_all_zero": true,
+      "shared_state_keys": 328,
+      "shared_state_exactly_matches_none": true,
+      "mismatched_keys": [],
+      "base": {
+        "correct": 1794,
+        "total": 1881,
+        "accuracy": 95.3748006
+      },
+      "novel": {
+        "correct": 1741,
+        "total": 1788,
+        "accuracy": 97.3713647
+      },
+      "harmonic_mean": 96.3627419
+    }
+  ],
+  "folded": [
+    {
+      "kind": "fold_check",
+      "status": "success",
+      "evaluated_examples": 1881,
+      "prediction_disagreements": 0,
+      "max_abs_logit_error": 0.0546875,
+      "original_correct": 1799,
+      "folded_correct": 1799,
+      "gate_type": "scalar",
+      "fold_scope": "full CLIP on every evaluation batch; in-memory projection weights only",
+      "fold_precision": "projection native dtype; CLIP recipe fp16",
+      "mode": "scalar",
+      "subset": "base",
+      "seed": 1
+    },
+    {
+      "kind": "fold_check",
+      "status": "success",
+      "evaluated_examples": 1788,
+      "prediction_disagreements": 1,
+      "max_abs_logit_error": 0.0546875,
+      "original_correct": 1745,
+      "folded_correct": 1744,
+      "gate_type": "scalar",
+      "fold_scope": "full CLIP on every evaluation batch; in-memory projection weights only",
+      "fold_precision": "projection native dtype; CLIP recipe fp16",
+      "mode": "scalar",
+      "subset": "new",
+      "seed": 1
+    },
+    {
+      "kind": "fold_check",
+      "status": "success",
+      "evaluated_examples": 1881,
+      "prediction_disagreements": 1,
+      "max_abs_logit_error": 0.078125,
+      "original_correct": 1796,
+      "folded_correct": 1795,
+      "gate_type": "channel",
+      "fold_scope": "full CLIP on every evaluation batch; in-memory projection weights only",
+      "fold_precision": "projection native dtype; CLIP recipe fp16",
+      "mode": "channel",
+      "subset": "base",
+      "seed": 1
+    },
+    {
+      "kind": "fold_check",
+      "status": "success",
+      "evaluated_examples": 1788,
+      "prediction_disagreements": 3,
+      "max_abs_logit_error": 0.046875,
+      "original_correct": 1742,
+      "folded_correct": 1741,
+      "gate_type": "channel",
+      "fold_scope": "full CLIP on every evaluation batch; in-memory projection weights only",
+      "fold_precision": "projection native dtype; CLIP recipe fp16",
+      "mode": "channel",
+      "subset": "new",
+      "seed": 1
+    }
+  ],
+  "source_hashes": {
+    "scripts/maple/run_gate_ablation.py": "9523bf155d57ee34e88291db1800afec30acbc71304920c8829fbc99759b1792",
+    "tests/test_gate_ablation.py": "502895e20f7aad23bf169af06e61b71402f9a12fba3611f5f1f6697901b404bd",
+    "trainers/maple.py": "7f73150ecda5c68f7c0951c21f42604c1bf4fd1bdb1deaf243e2c4d654e7dcf3",
+    "trainers/gating_checkpoint.py": "42e5c8fb6ceab26e73345141584ff766a07fa7b4a2ded154d45b45fdcda2a327",
+    "train.py": "c8785b94fbdea5e78ff4de52154379b6c834466cd42105713e2fcb204bbfaa1c"
+  },
+  "dtd": {
+    "status": "not_run",
+    "reason": "official image download about 18 KB/s; fixed split direct and accelerated requests timed out; incomplete archive retained, dataset not adopted"
+  },
+  "training_diagnostic_source_sha256": "df23b6e0da5ad835cb6c7ac9f54d6edbc57692aa26f231f3a5f2fe70f306289e",
+  "final_source_archive_sha256": "65c6ec0cc4aad9a423405dfece321d1640870803dde07ffc013c5701df7f2941",
+  "protocol": {
+    "dataset": "OxfordPets",
+    "seed": 1,
+    "epochs": 5,
+    "shots": 16,
+    "precision": "fp16",
+    "fixed_one_fresh_training": true,
+    "fold_checkpoint_epoch": 5,
+    "fixed_one_is_single_seed_diagnostic": true
+  },
+  "validation": {
+    "cpu_tests": 14,
+    "cpu_seconds": 1.423,
+    "gpu": "NVIDIA GeForce RTX 3090",
+    "gpu_memory_mib": 24576,
+    "instance_shutdown_verified": true
+  }
+}

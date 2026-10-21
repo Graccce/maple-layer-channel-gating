@@ -9,9 +9,12 @@
 - [x] OxfordPets five-epoch paired seeds 1/2/3
 - [ ] DTD data preparation and paired experiments
 - [x] Trained prompt-projection folding check (CPU float64)
-- [ ] Fixed-one and full-model affine-folding ablations
+- [x] Fixed-one scalar/channel training control (seed 1)
+- [x] Full-CLIP fp16 folding comparison on Base/Novel (seed 1; small prediction changes observed)
 - [ ] Related-work checks
 
 Track actual work in repository Issues. Check an item only after preserving its test or experiment evidence. No automatic GPU training is scheduled.
 
 Evidence: [OxfordPets report](RESULTS_2026-10-20.md). AutoDL was verified shut down on 2026-10-21.
+
+Follow-up evidence: [2026-10-21 ablations](ABLATIONS_2026-10-21.md). DTD download/split network failures are documented there.
