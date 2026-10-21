@@ -68,3 +68,5 @@ python scripts/maple/run_gate_ablation.py fold_check NEW_FOLD_REPORT.json \
 ```
 
 报告文件已存在时脚本拒绝执行。`fold_check` 要求 eval-only；`fixed_one` 拒绝恢复或评估已有 checkpoint。完整 fp32、AMP、GPU 中断恢复、门控学习率/正则、冻结投影消融和相关工作系统检索仍待完成。
+
+后续进展（2026-10-22）：DTD 数据准备与三模式三种子实验已完成，见 [DTD 报告](RESULTS_DTD_2026-10-22.md)。上文保留本记录日期的实际状态。
