@@ -51,3 +51,9 @@ tanh 饱和会减小梯度；半精度会有量化误差，小门控变化可能
 - [MaPLe 官方代码](https://github.com/muzairkhattak/multimodal-prompt-learning)
 - [MaPLe 原论文](https://arxiv.org/abs/2210.03117)
 
+## 独立冻结投影对照
+
+`run_gating.sh` 的可选第七参数 `frozen_projection` 仅用于机制消融：冻结全部深层跨模态投影，浅层投影和文本提示仍可训练，门控按所选模式学习。主比较保持默认 `standard`，不改变原训练配方。
+
+此对照为 checkpoint 增加 `_frozen_projection_schema`，必须用 `run_projection_control.py` 训练和评估；常规严格加载拒绝该额外标记。每次运行记录投影初始化/最终哈希，并确认不同模式在同一种子下的投影初始化一致。冻结投影改变了训练条件，其结果不能直接替代原 MaPLe 主比较。
+

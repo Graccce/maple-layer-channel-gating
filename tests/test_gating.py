@@ -209,6 +209,7 @@ class GateTests(unittest.TestCase):
             root = Path(tmp)
             (root / 'scripts/maple').mkdir(parents=True)
             (root / 'data/oxford_pets').mkdir(parents=True)
+            (root / 'data/oxford_pets/split_zhou_OxfordPets.json').write_text('{}')
             shutil.copy('scripts/maple/run_gating.sh', root / 'scripts/maple/run_gating.sh')
             tools = root / 'bin'
             tools.mkdir()
@@ -230,6 +231,17 @@ class GateTests(unittest.TestCase):
                 self.assertIn('DATASET.SUBSAMPLE_CLASSES base', calls)
                 self.assertIn('DATASET.SUBSAMPLE_CLASSES new', calls)
                 self.assertNotEqual(subprocess.run(cmd, env=env, capture_output=True).returncode, 0)
+            # Dataset aliases and opt-in control must route through the same runner.
+            (root / 'data/caltech-101').mkdir(parents=True)
+            command = ['bash', str(root / 'scripts/maple/run_gating.sh'), str(root / 'data'),
+                       'caltech101', 'channel', '1', 'frozen_test', 'formal', 'frozen_projection']
+            missing = subprocess.run(command, env=env, capture_output=True)
+            self.assertNotEqual(missing.returncode, 0)
+            self.assertIn(b'Missing fixed split', missing.stdout)
+            (root / 'data/caltech-101/split_zhou_Caltech101.json').write_text('{}')
+            subprocess.run(command, env=env, check=True, capture_output=True)
+            self.assertIn('run_projection_control.py', (root / 'calls').read_text())
+            self.assertTrue((root / 'output/gating_v1/ablation/formal/frozen_test/caltech101/channel/seed1').is_dir())
 
     def test_result_summary_formula_and_refusal(self):
         import json
@@ -276,3 +288,4 @@ class GateTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
+
