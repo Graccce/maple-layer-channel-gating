@@ -2,7 +2,7 @@
 
 深度学习课程研究项目：复现 [MaPLe (CVPR 2023)](https://github.com/muzairkhattak/multimodal-prompt-learning)，在深层文本提示的视觉投影后增加恒等初始化的静态门控。
 
-**当前状态：21 项测试通过；OxfordPets、DTD、Caltech101、Flowers102、EuroSAT、FGVCAircraft 的三模式 × 三种子共 54 组主实验完成，另完成 18 组冻结投影消融和 3 组固定上游源码重放。最终验收实际检查 57 个新增训练 checkpoint。Channel 在 EuroSAT 平均 HM 为 +1.2799 个百分点，但在 FGVCAircraft 为 -11.8858，六数据集结果不支持普遍提升。详见 [六数据集结果](docs/RESULTS_EXPANDED_2026-10-22.md)、[基线复现核对](docs/BASELINE_REPRODUCTION_AUDIT.md)、[OxfordPets](docs/RESULTS_2026-10-20.md)、[DTD](docs/RESULTS_DTD_2026-10-22.md) 和 [消融](docs/ABLATIONS_2026-10-21.md)。**
+**当前状态：25 项测试通过；OxfordPets、DTD、Caltech101、Flowers102、EuroSAT、FGVCAircraft 的三模式 × 三种子共 54 组主实验完成，另完成 18 组冻结投影消融和 3 组固定上游源码重放。最终验收实际检查 57 个新增训练 checkpoint。Channel 在 EuroSAT 平均 HM 为 +1.2799 个百分点，但在 FGVCAircraft 为 -11.8858，六数据集结果不支持普遍提升。针对 FGVCAircraft channel 退化的机制诊断已完成：固定恒等门控对照确认前向实现无 bug，门控学习率消融与逐 epoch 轨迹表明退化是优化轨迹效应，门控全程接近恒等映射。详见 [六数据集结果](docs/RESULTS_EXPANDED_2026-10-22.md)、[机制诊断结果](docs/DIAGNOSTIC_RESULTS_2026-10-22.md)、[基线复现核对](docs/BASELINE_REPRODUCTION_AUDIT.md)、[OxfordPets](docs/RESULTS_2026-10-20.md)、[DTD](docs/RESULTS_DTD_2026-10-22.md) 和 [消融](docs/ABLATIONS_2026-10-21.md)。**
 
 ## 方法
 
@@ -63,4 +63,3 @@ done
 ## 来源与许可证
 
 本项目基于官方 MaPLe commit `69bce21ae8eda80ad6187534b2dce09cf6c59e17` 的完整源码快照。保留 [MIT LICENSE](LICENSE) 和 [原始 README](docs/UPSTREAM_README.md)，不把上游成果归为本项目原创。完整来源和 fixture 校验见 [UPSTREAM.md](UPSTREAM.md)。
-
