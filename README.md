@@ -2,7 +2,7 @@
 
 深度学习课程项目。在 [MaPLe](https://github.com/muzairkhattak/multimodal-prompt-learning)（CVPR 2023）的基础上做了一点小改动：给深层文本提示投影到视觉空间的那一步加一个可学习的门控，看看对 base-to-novel 泛化有没有影响。
 
-组员看的一份完整整理在这里：[组内汇报](docs/GROUP_PRESENTATION.md)，论文原理、实验数据、分析结论和下一步都写在里面。
+详细的原理、改动、实验数据和后续计划见 [docs/PROJECT_NOTES.md](docs/PROJECT_NOTES.md)。
 
 改动本身很小。原来深层提示的投影是 `P_v = F(P_t)`，我在后面乘一个门控：
 
