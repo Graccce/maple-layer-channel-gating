@@ -76,11 +76,20 @@ seeds 1–3 同样未崩溃（崩溃出现在 seed 5，见下节），3 个种�
 
 ## 4 开销
 
-| 方法 | 可训练参数 | 额外 |
-|---|---:|---|
-| none | 3,555,072 | — |
-| cond_channel | 3,954,688 | +399,616（8 层 × 768→32→768） |
-| kc / kc_rw | 3,555,072 | 训练时多一次冻结 CLIP 前向；推理零开销，不进 checkpoint |
+RTX 3090，seeds 1–3 均值。训练时间为 `trainer.train()` 墙钟时间（含训练结束时 Dassl 的一次最终评估）；
+显存为全部 18 次运行中 `torch.cuda.max_memory_allocated` 的最大值。
+
+| 方法 | 可训练参数 | Pets (s) | DTD (s) | Caltech (s) | Flowers (s) | EuroSAT (s) | Aircraft (s) | 显存峰值 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| none | 3,555,072 | 27.3 | 28.6 | 62.2 | 62.6 | 14.2 | 64.2 | 1.35 GiB |
+| channel | 3,561,216 | 28.2 | 30.0 | 62.7 | 63.7 | 14.2 | 65.0 | 1.35 GiB |
+| cond_channel | 3,954,688 | 28.3 | 32.1 | 66.5 | 69.0 | 14.3 | 70.8 | 1.36 GiB |
+| kc | 3,555,072 | 33.0 | 37.6 | 73.7 | 75.4 | 18.9 | 77.3 | 1.70 GiB |
+| kc_rw | 3,555,072 | 33.2 | 37.8 | 73.9 | 75.3 | 19.3 | 77.7 | 1.70 GiB |
+
+- cond_channel 多 399,616 个参数（8 层 × 768→32→768），训练时间约 +0–10%。
+- kc / kc_rw 不增加可训练参数，训练时多一次冻结 CLIP 图像前向，时间约 +18–33%、显存 +0.35 GiB；
+  教师只在训练时使用，推理零开销，也不进 checkpoint。可信度加权本身几乎不增加开销（kc_rw ≈ kc）。
 
 ## 5 尚未完成 / 局限
 
@@ -95,5 +104,5 @@ seeds 1–3 同样未崩溃（崩溃出现在 seed 5，见下节），3 个种�
   用 `scripts/maple/run_queue.sh` 顺序执行；单个变体用 `scripts/maple/run_v2.sh`。
 - 汇总：`python scripts/maple/summarize_v2.py OUT.json PHASE1_FORMAL_ROOT output/v2/formal`。
 - 插图：`python scripts/maple/plot_paper_figures.py`（只读 `docs/results/`，不需要 GPU）。
-- 当前提交的汇总 JSON 含每个变体的 Base/Novel/HM 均值与标准差、逐种子 HM；逐种子 Base/Novel 的
-  correct/total 字段已加入 `summarize_v2.py`，待 AutoDL 实例开机后重新生成该 JSON。
+- 汇总 JSON（2026-11-06 重新生成）含每个变体的 Base/Novel/HM 均值与标准差，以及逐种子的 Base/Novel
+  正确数/总数、HM、训练时间和显存峰值；重新生成后所有均值与此前版本逐项相同。
