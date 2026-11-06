@@ -1,0 +1,38 @@
+# 第二阶段实验预登记（2026-11-06）
+
+第一阶段结论：静态 scalar/channel 门控可被吸收进可训练投影 W，不扩大函数空间；六数据集结果
+有正有负，FGVCAircraft channel 的崩溃定位为优化轨迹敏感（见 `DIAGNOSTIC_RESULTS_2026-10-22.md`）。
+第二阶段只改变下列三个因素，其余配方（ViT-B/16、16-shot、N_CTX=2、PROMPT_DEPTH=9、5 epochs、
+SGD lr 0.0035、fp16、seeds 1/2/3、同一 fixed split 与 few-shot cache）与第一阶段完全一致。
+
+## 方法变量
+
+| 标签 | 改动 | 配置 |
+|---|---|---|
+| `none` | 原版 MaPLe（直接复用第一阶段配对结果） | — |
+| `cond_channel` | 输入条件门控：`g_l(x) = 1 + 0.5 tanh(U_l GELU(D_l LN(cls_{l-1}(x))))`，按通道作用于第 l 层视觉深层 prompt | `GATE_TYPE cond_channel`, `GATE_RANK 32` |
+| `kc` | 零样本知识一致性：`L = CE + 25·L1(f_t, f_t^zs) + 10·L1(f_v, f_v^zs) + 1·KL(p ‖ p^zs)` | `KC_TEXT/IMAGE/LOGIT_WEIGHT 25/10/1` |
+| `cond_channel_kc` | 两者组合 | 以上两者 |
+| `*_clip` | 全局梯度范数裁剪（稳定性实验） | `GRAD_CLIP c` |
+
+- `cls_{l-1}(x)` 是进入第 l 个带 prompt 视觉 block 时的 CLS token（上一 block 输出），因此无需
+  CoCoOp 那样额外跑一次图像编码器。U 零初始化 → 第一步 g ≡ 1，与 `none` 前向逐位一致（单元测试
+  `test_identity_at_init_matches_none_bitwise`）；D 由私有 generator 初始化，不推进全局 RNG，
+  数据顺序与其他参数初始化与 `none` 配对。
+- KC 的权重直接沿用 PromptSRC（ICCV 2023）公开配置的 25/10/1，零样本文本特征使用与本项目
+  zero-shot 参考相同的单模板 `CUSTOM_TEMPLATES`。**不根据 Novel 测试结果调这些超参。**
+- `GATE_RANK=32` 事先固定；rank / cond_scalar 只作为事后消融，单独报告。
+
+## 实验列表
+
+1. 环境一致性：EuroSAT `none` seed 1 在新代码目录重跑，checkpoint 与第一阶段逐张量比较。
+2. 稳定性（FGVCAircraft）：`none`、`channel` 补 seeds 4/5；`none_clip`、`channel_clip` seeds 1–5。
+   裁剪阈值 c 依据 `none` 训练日志中的梯度范数（训练集统计，与测试无关）事先确定后再启动。
+3. 主比较：六数据集 × {`cond_channel`, `kc`, `cond_channel_kc`} × seeds 1/2/3 = 54 次训练。
+4. 消融（主比较完成后）：`cond_scalar`、rank 8/64、仅 KC 文本项等，选三个代表数据集。
+
+## 报告规则
+
+- 每个种子先算 HM，再报均值 ± 样本标准差；ΔHM 为与同数据集同种子 `none` 的配对差。
+- 保留所有失败与负结果；不替换种子，不挑数据集。
+- 新输出写入 `output/v2/`，checkpoint 评估后只保留 SHA-256（磁盘限制），`KEEP_CKPT=1` 例外。

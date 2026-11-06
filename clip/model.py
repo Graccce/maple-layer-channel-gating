@@ -303,7 +303,15 @@ class ResidualAttentionBlock_MaPLe(nn.Module):
                         prefix = x[0:x.shape[0] - self.compound_prompt_nctx, :, :]
                         # Create/configure learnable tokens of this layer
                         visual_context = compound_prompts_deeper[counter]  # extract the correct index
-                        visual_context = visual_context.expand(x.shape[1], -1, -1).permute(1, 0, 2).half()
+                        if isinstance(visual_context, tuple):
+                            # Input-conditioned gate (GATE_TYPE cond_*): x[0] is the CLS token
+                            # produced by the previous block, so no extra encoder pass is needed.
+                            visual_context, gate_fn = visual_context
+                            gate = gate_fn(x[0])  # [B, D] or [B, 1], fp32
+                            visual_context = visual_context.unsqueeze(0).float() * gate.unsqueeze(1)
+                            visual_context = visual_context.permute(1, 0, 2).half()
+                        else:
+                            visual_context = visual_context.expand(x.shape[1], -1, -1).permute(1, 0, 2).half()
                         # Add the learnable tokens of this layer with the input, by replacing previous
                         # layer learnable tokens
                         x = torch.cat([prefix, visual_context], dim=0)

@@ -68,6 +68,39 @@ class TextEncoder(nn.Module):
         return x
 
 
+# Schema ids stored in checkpoints; ids 1/2 are the original static scalar/channel gates.
+GATE_SCHEMAS = {"scalar": 1, "channel": 2, "cond_channel": 3, "cond_scalar": 4}
+CONDITIONAL_GATES = ("cond_channel", "cond_scalar")
+
+
+class ConditionalGate(nn.Module):
+    """g(x) = 1 + 0.5 * tanh(U gelu(D LN(cls))).
+
+    U is zero-initialised, so g == 1 exactly at the first step and the model starts as the
+    original MaPLe. Construction does not advance the global RNG (D uses a private generator),
+    which keeps data order and every other initialisation paired with the ``none`` baseline.
+    """
+
+    def __init__(self, width, rank, out="channel", init_seed=0):
+        super().__init__()
+        with torch.random.fork_rng(devices=[]):
+            self.norm = nn.LayerNorm(width, elementwise_affine=False)
+            self.down = nn.Linear(width, rank)
+            self.up = nn.Linear(rank, width if out == "channel" else 1)
+        generator = torch.Generator().manual_seed(1000 + init_seed)
+        bound = 1.0 / math.sqrt(width)
+        with torch.no_grad():
+            self.down.weight.uniform_(-bound, bound, generator=generator)
+            self.down.bias.uniform_(-bound, bound, generator=generator)
+            self.up.weight.zero_()
+            self.up.bias.zero_()
+
+    def forward(self, cls):
+        """cls: [B, width] in any dtype -> fp32 gate [B, width] (or [B, 1])."""
+        hidden = F.gelu(self.down(self.norm(cls.float())))
+        return 1.0 + 0.5 * torch.tanh(self.up(hidden))
+
+
 class MultiModalPromptLearner(nn.Module):
     def __init__(self, cfg, classnames, clip_model):
         super().__init__()
@@ -118,10 +151,21 @@ class MultiModalPromptLearner(nn.Module):
         single_layer = nn.Linear(ctx_dim, 768)
         self.compound_prompt_projections = _get_clones(single_layer, self.compound_prompts_depth - 1)
         self.gate_type = getattr(cfg.TRAINER.MAPLE, "GATE_TYPE", "none")
-        if self.gate_type not in ("none", "scalar", "channel"):
-            raise ValueError("TRAINER.MAPLE.GATE_TYPE must be none, scalar, or channel")
+        if self.gate_type not in GATE_SCHEMAS and self.gate_type != "none":
+            raise ValueError("TRAINER.MAPLE.GATE_TYPE must be one of none, " + ", ".join(GATE_SCHEMAS))
+        if self.gate_type in CONDITIONAL_GATES:
+            # Input-conditioned gates: generated per image from the CLS token entering each
+            # prompted visual layer, so they cannot be folded into the static projection W.
+            rank = int(getattr(cfg.TRAINER.MAPLE, "GATE_RANK", 32))
+            out = "channel" if self.gate_type == "cond_channel" else "scalar"
+            self.cond_gates = nn.ModuleList([
+                ConditionalGate(layer.out_features, rank, out, init_seed=index)
+                for index, layer in enumerate(self.compound_prompt_projections)
+            ])
+            self.register_buffer("_gate_schema", torch.tensor(
+                [1, GATE_SCHEMAS[self.gate_type]], dtype=torch.int64))
         # Static, layer-shared scaling. Zero init consumes no random numbers.
-        if self.gate_type != "none":
+        elif self.gate_type != "none":
             self.gate_alphas = nn.ParameterList([
                 nn.Parameter(torch.zeros(() if self.gate_type == "scalar" else (layer.out_features,)))
                 for layer in self.compound_prompt_projections
@@ -192,11 +236,15 @@ class MultiModalPromptLearner(nn.Module):
         visual_deep_prompts = []
         for index, layer in enumerate(self.compound_prompt_projections):
             z = layer(self.compound_prompts_text[index])
-            if self.gate_type != "none":
+            if self.gate_type in ("scalar", "channel"):
                 # Evaluate tanh in fp32, then preserve the projection/autocast dtype.
                 alpha = self.gate_alphas[index]
                 gate = (1.0 + 0.5 * torch.tanh(alpha.float())).to(dtype=z.dtype)
                 z = z * gate
+            if self.gate_type in CONDITIONAL_GATES:
+                # The visual block applies the gate after reading the current CLS token.
+                visual_deep_prompts.append((z, self.cond_gates[index]))
+                continue
             visual_deep_prompts.append(z)
         # Now the other way around
         # We will project the textual prompts from 512 to 768
@@ -213,7 +261,7 @@ class CustomCLIP(nn.Module):
         self.logit_scale = clip_model.logit_scale
         self.dtype = clip_model.dtype
 
-    def forward(self, image, label=None):
+    def forward(self, image, label=None, return_features=False):
         tokenized_prompts = self.tokenized_prompts
         logit_scale = self.logit_scale.exp()
 
@@ -225,6 +273,8 @@ class CustomCLIP(nn.Module):
         text_features = text_features / text_features.norm(dim=-1, keepdim=True)
         logits = logit_scale * image_features @ text_features.t()
 
+        if return_features:
+            return logits, image_features, text_features
         if self.prompt_learner.training:
             return F.cross_entropy(logits, label)
 
@@ -274,7 +324,7 @@ class MaPLe(TrainerX):
         print("Trainable parameters:", sum(p.numel() for p in self.model.parameters() if p.requires_grad))
         print("Gate type:", cfg.TRAINER.MAPLE.GATE_TYPE,
               "gate parameters:", sum(p.numel() for n, p in self.model.named_parameters()
-                                       if "gate_alphas" in n))
+                                       if "gate_alphas" in n or "cond_gates" in n))
 
         if cfg.MODEL.INIT_WEIGHTS:
             load_prompt_checkpoint(self.model, load_checkpoint(cfg.MODEL.INIT_WEIGHTS)["state_dict"])
@@ -294,6 +344,63 @@ class MaPLe(TrainerX):
             print(f"Multiple GPUs detected (n_gpus={device_count}), use all of them!")
             self.model = nn.DataParallel(self.model)
 
+    def _consistency_enabled(self):
+        m = self.cfg.TRAINER.MAPLE
+        return m.KC_TEXT_WEIGHT > 0 or m.KC_IMAGE_WEIGHT > 0 or m.KC_LOGIT_WEIGHT > 0
+
+    def _build_zero_shot_teacher(self):
+        """Frozen original CLIP + fixed hand-crafted prompts (same templates as the zero-shot
+        reference). Kept on the trainer, not the model, so checkpoints are unchanged."""
+        from trainers.coop import load_clip_to_cpu as load_vanilla_clip
+        from trainers.zsclip import CUSTOM_TEMPLATES
+        cfg = self.cfg
+        teacher = load_vanilla_clip(cfg).to(self.device).eval()
+        for p in teacher.parameters():
+            p.requires_grad_(False)
+        template = CUSTOM_TEMPLATES[cfg.DATASET.NAME]
+        prompts = [template.format(c.replace("_", " ")) for c in self.dm.dataset.classnames]
+        with torch.no_grad():
+            text = teacher.encode_text(torch.cat([clip.tokenize(p) for p in prompts]).to(self.device))
+        self._zs_teacher = teacher
+        self._zs_text = (text / text.norm(dim=-1, keepdim=True)).float()
+        print(f"Zero-shot consistency teacher ready ({len(prompts)} classes, template {template!r})")
+
+    def _consistency_loss(self, image, logits, image_features, text_features):
+        m = self.cfg.TRAINER.MAPLE
+        if getattr(self, "_zs_teacher", None) is None:
+            self._build_zero_shot_teacher()
+        with torch.no_grad():
+            zs_image = self._zs_teacher.encode_image(image.type(self._zs_teacher.dtype)).float()
+            zs_image = zs_image / zs_image.norm(dim=-1, keepdim=True)
+            zs_logits = self._zs_teacher.logit_scale.exp().float() * zs_image @ self._zs_text.t()
+        parts = {}
+        if m.KC_TEXT_WEIGHT > 0:
+            parts["kc_text"] = m.KC_TEXT_WEIGHT * F.l1_loss(text_features.float(), self._zs_text)
+        if m.KC_IMAGE_WEIGHT > 0:
+            parts["kc_image"] = m.KC_IMAGE_WEIGHT * F.l1_loss(image_features.float(), zs_image)
+        if m.KC_LOGIT_WEIGHT > 0:
+            parts["kc_logit"] = m.KC_LOGIT_WEIGHT * F.kl_div(
+                F.log_softmax(logits.float(), dim=1), F.log_softmax(zs_logits, dim=1),
+                reduction="sum", log_target=True) / logits.numel()
+        return parts
+
+    def _compute_loss(self, image, label):
+        if not self._consistency_enabled():
+            return self.model(image, label), {}
+        logits, image_features, text_features = self.model(image, label, return_features=True)
+        parts = self._consistency_loss(image, logits, image_features, text_features)
+        ce = F.cross_entropy(logits, label)
+        return ce + sum(parts.values()), {"ce": ce.item(), **{k: v.item() for k, v in parts.items()}}
+
+    def _grad_norm(self):
+        """Measure (and optionally clip) the trainable gradient norm; GRAD_CLIP 0 = off."""
+        params = [p for p in self.model.parameters() if p.requires_grad and p.grad is not None]
+        max_norm = self.cfg.TRAINER.MAPLE.GRAD_CLIP
+        if max_norm > 0:
+            return float(torch.nn.utils.clip_grad_norm_(params, max_norm))
+        with torch.no_grad():
+            return float(torch.norm(torch.stack([p.grad.detach().float().norm() for p in params])))
+
     def forward_backward(self, batch):
         image, label = self.parse_batch_train(batch)
 
@@ -304,18 +411,21 @@ class MaPLe(TrainerX):
         prec = self.cfg.TRAINER.MAPLE.PREC
         if prec == "amp":
             with autocast():
-                loss = model(image, label)
+                loss, extra = self._compute_loss(image, label)
             optim.zero_grad()
             scaler.scale(loss).backward()
+            scaler.unscale_(optim)
+            grad_norm = self._grad_norm()
             scaler.step(optim)
             scaler.update()
         else:
-            loss = model(image, label)
+            loss, extra = self._compute_loss(image, label)
             optim.zero_grad()
             loss.backward()
+            grad_norm = self._grad_norm()
             optim.step()
 
-        loss_summary = {"loss": loss.item()}
+        loss_summary = {"loss": loss.item(), "grad_norm": grad_norm, **extra}
 
         if (self.batch_idx + 1) == self.num_batches:
             self.update_lr()

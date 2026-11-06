@@ -31,7 +31,7 @@ def measured_train(self, *args, **kwargs):
         torch.cuda.synchronize()
         metrics['trainer_train_seconds_including_final_eval'] = time.perf_counter() - start
         metrics['trainable_parameters'] = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
-        metrics['gate_parameters'] = sum(p.numel() for n, p in self.model.named_parameters() if 'gate_alphas' in n)
+        metrics['gate_parameters'] = sum(p.numel() for n, p in self.model.named_parameters() if 'gate_alphas' in n or 'cond_gates' in n)
 
 
 MaPLe.train = measured_train
