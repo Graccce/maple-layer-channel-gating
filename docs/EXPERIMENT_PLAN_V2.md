@@ -28,6 +28,8 @@ SGD lr 0.0035、fp16、seeds 1/2/3、同一 fixed split 与 few-shot cache）与
 1. 环境一致性：EuroSAT `none` seed 1 在新代码目录重跑，checkpoint 与第一阶段逐张量比较。
 2. 稳定性（FGVCAircraft）：`none`、`channel` 补 seeds 4/5；`none_clip`、`channel_clip` seeds 1–5。
    裁剪阈值 c 依据 `none` 训练日志中的梯度范数（训练集统计，与测试无关）事先确定后再启动。
+   **已确定 c = 10**（2026-11-06 11:20，依据 Aircraft none seed 4：warmup 期均值约 18、峰值 38；
+   lr 升至 3.5e-3 后稳定在 4–5。c≈2× 稳定期典型值，只截断尖峰）。
 3. 主比较：六数据集 × {`cond_channel`, `kc`, `cond_channel_kc`} × seeds 1/2/3 = 54 次训练。
 4. 消融（主比较完成后）：`cond_scalar`、rank 8/64、仅 KC 文本项等，选三个代表数据集。
 

@@ -7,6 +7,7 @@ can never silently replace a result. HM is computed per seed, then mean +- sampl
 difference to `none` on the same dataset and seed (seeds without a `none` partner are not paired).
 """
 import json
+import re
 import statistics
 import sys
 from collections import defaultdict
@@ -27,6 +28,16 @@ def collect(roots):
                 raise RuntimeError(f'Duplicate result for {key}: {runs[key]["run"]} and {seed_dir}')
             row = json.loads(path.read_text())
             row['run'] = str(seed_dir)
+            # Exact accuracy from correct/total (the log percentage is rounded to 0.1).
+            for subset, field in (('base', 'base_accuracy'), ('new', 'novel_accuracy')):
+                text = (seed_dir / f'test_{subset}' / 'log.txt').read_text()
+                total = re.findall(r'\* total: ([0-9,]+)', text)
+                correct = re.findall(r'\* correct: ([0-9,]+)', text)
+                if len(total) != 1 or len(correct) != 1:
+                    raise RuntimeError(f'Expected one evaluation in {seed_dir}/test_{subset}')
+                row[field] = 100.0 * int(correct[0].replace(',', '')) / int(total[0].replace(',', ''))
+            b, n = row['base_accuracy'], row['novel_accuracy']
+            row['harmonic_mean'] = 2 * b * n / (b + n) if b + n else 0.0
             runs[key] = row
     return runs
 
