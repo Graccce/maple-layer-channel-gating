@@ -42,6 +42,7 @@ ViT-B/16、16-shot、5 epochs，原 MaPLe 训练配方；Base-to-Novel，HM 逐�
 
 | 文档 | 内容 |
 |---|---|
+| [docs/MAPLE_PAPER_EXPLAINED.md](docs/MAPLE_PAPER_EXPLAINED.md) | 原论文梳理：问题、创新点、架构、实验与局限 |
 | [docs/PAPER_OUTLINE.md](docs/PAPER_OUTLINE.md) | 论文框架与各章写作要点 |
 | [docs/RESULTS_V2.md](docs/RESULTS_V2.md) | 第二阶段结果：条件门控、KC、kc_rw、稳定性、门控统计 |
 | [docs/EXPERIMENT_PLAN_V2.md](docs/EXPERIMENT_PLAN_V2.md) | 第二阶段预登记（超参在看结果前固定） |
