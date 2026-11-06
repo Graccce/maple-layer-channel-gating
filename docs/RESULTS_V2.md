@@ -88,3 +88,12 @@ seeds 1–3 同样未崩溃（崩溃出现在 seed 5，见下节），3 个种�
 - 只评估 6/11 个数据集，未做跨数据集与域泛化。
 - EuroSAT 上教师平均可信度 w̄≈0.51 反而高于 DTD 的 0.38，说明 EuroSAT 的下降不能简单归因于"教师不可靠"，机制待查。
 - 条件门控未被训练起来；若要继续，需要单独研究门控参数的学习率/初始化（另立预登记，不能用 Novel 结果挑选）。
+
+## 6 复现方式
+
+- 实际执行的任务队列：`scripts/maple/queues_v2/`（00 smoke → 01 主比较 → 02 梯度裁剪 → 03 kc_rw），
+  用 `scripts/maple/run_queue.sh` 顺序执行；单个变体用 `scripts/maple/run_v2.sh`。
+- 汇总：`python scripts/maple/summarize_v2.py OUT.json PHASE1_FORMAL_ROOT output/v2/formal`。
+- 插图：`python scripts/maple/plot_paper_figures.py`（只读 `docs/results/`，不需要 GPU）。
+- 当前提交的汇总 JSON 含每个变体的 Base/Novel/HM 均值与标准差、逐种子 HM；逐种子 Base/Novel 的
+  correct/total 字段已加入 `summarize_v2.py`，待 AutoDL 实例开机后重新生成该 JSON。

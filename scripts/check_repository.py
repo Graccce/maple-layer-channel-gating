@@ -8,6 +8,11 @@ fixture = root / 'tests/fixtures/maple_upstream.py'
 assert hashlib.sha256(fixture.read_bytes()).hexdigest() == 'e067414c25e87a7ea40b9ec399fd13f655fe38a5f205e3bc5a5ce74a78a761b0'
 train = (root / 'train.py').read_text(encoding='utf-8')
 assert 'cfg.TRAINER.MAPLE.GATE_TYPE = "none"' in train
+# Phase-2 options must default to the original MaPLe objective.
+for line in ('cfg.TRAINER.MAPLE.KC_TEXT_WEIGHT = 0.0', 'cfg.TRAINER.MAPLE.KC_IMAGE_WEIGHT = 0.0',
+             'cfg.TRAINER.MAPLE.KC_LOGIT_WEIGHT = 0.0', 'cfg.TRAINER.MAPLE.KC_REWEIGHT = "none"',
+             'cfg.TRAINER.MAPLE.GRAD_CLIP = 0.0'):
+    assert line in train, line
 for mode in ('none', 'scalar', 'channel'):
     path = root / f'configs/trainers/MaPLe/vit_b16_gating_{mode}.yaml'
     assert f'GATE_TYPE: "{mode}"' in path.read_text()

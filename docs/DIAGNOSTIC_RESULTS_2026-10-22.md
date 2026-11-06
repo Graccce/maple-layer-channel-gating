@@ -59,6 +59,8 @@ FGVCAircraft channel seed 2 单次训练，逐 epoch checkpoint（`CHECKPOINT_FR
 
 ## 综合结论与不宣称事项
 
+> **更正（2026-11-06，第二阶段）**：FGVCAircraft 扩展到 5 个种子后，**原版 MaPLe（none）也在 seed 5 崩溃**（HM 19.44），静态 channel 崩溃 3/5，梯度裁剪（阈值 10）不能消除崩溃。因此崩溃首先是原训练配方在该数据集上的不稳定，静态门控可能提高其发生概率（样本量不足以下统计结论），而不是门控单独造成的。详见 [RESULTS_V2.md](RESULTS_V2.md) 第 3 节。
+
 - 三个诊断一致支持：FGVCAircraft 的 channel 退化是优化轨迹效应，不是前向实现 bug。
 - 通道门控对 FGVCAircraft 的门控学习率非单调敏感，EuroSAT 无此现象；机制仍未完全定位。
 - 以上结论不改变“静态门控可被吸收进可训练线性投影、不扩大函数表达空间”的冗余判断，

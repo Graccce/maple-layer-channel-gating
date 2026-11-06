@@ -20,3 +20,10 @@ The same-epoch checkpoint is evaluated on both base and novel test subsets. Vali
 Hypotheses may fail. The seed-1 fixed-one diagnostic is complete (see ABLATIONS_2026-10-21.md); frozen projection, alternative gate LR, and gate regularization are separate diagnostic experiments and must not be silently mixed into the primary comparison. Fold a trained gate into W,b to test the affine equivalence. Record layer-wise gate distributions and saturation, without treating additional parameters as additional expressiveness.
 
 OxfordPets three-mode, three-seed formal results are available in the [2026-10-20 report](RESULTS_2026-10-20.md). Use `analyze_gating_runs.py RUN_ROOT --epoch 5 --output NEW_FILE.json` for exact correct/total statistics and projection-level gate diagnostics; the older `summarize_gating.py` uses displayed rounded accuracies. Seed-1 fixed-one and full-CLIP fp16 folding diagnostics are recorded in the [follow-up](ABLATIONS_2026-10-21.md); small rounding-related prediction differences were observed. DTD data preparation, three-mode smoke and nine formal runs are now complete: see [DTD results](RESULTS_DTD_2026-10-22.md) and [preparation instructions](DTD_DATA_PREPARATION.md). The original network failure record is preserved in the dated follow-up.
+
+## Phase 2
+
+Phase-2 runs use `scripts/maple/run_v2.sh` (one variant = base config + explicit `TRAINER.MAPLE.*` overrides) and the
+sequential `scripts/maple/run_queue.sh`; the exact queues executed are in `scripts/maple/queues_v2/`. Aggregate with
+`scripts/maple/summarize_v2.py` (exact correct/total accuracies, paired dHM vs `none`). Pre-registration:
+[EXPERIMENT_PLAN_V2.md](EXPERIMENT_PLAN_V2.md); results: [RESULTS_V2.md](RESULTS_V2.md).
