@@ -29,7 +29,8 @@ Latest evidence: [DTD results](RESULTS_DTD_2026-10-22.md), [data preparation](DT
 - [x] Six datasets x 3 seeds for cond_channel / kc / cond_channel_kc / kc_rw
 - [x] FGVCAircraft seeds 4/5 and gradient-clipping stability runs
 - [x] Gate statistics export and paper figures
-- [ ] Regenerate `docs/results/2026-11-06-v2-summary.json` with per-seed Base/Novel correct/total (needs the AutoDL outputs)
+- [x] Full unit suite on Linux (34 tests OK, 2026-11-06)
+- [x] Regenerate `docs/results/2026-11-06-v2-summary.json` with per-seed Base/Novel correct/total, time and memory
 - [ ] Final paper draft (see [PAPER_OUTLINE.md](PAPER_OUTLINE.md))
 
 Evidence: [RESULTS_V2.md](RESULTS_V2.md), pre-registration [EXPERIMENT_PLAN_V2.md](EXPERIMENT_PLAN_V2.md).
