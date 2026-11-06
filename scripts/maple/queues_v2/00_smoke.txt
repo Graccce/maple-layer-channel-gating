@@ -1,0 +1,7 @@
+# 1-epoch smoke on EuroSAT (all phase-2 variants)
+eurosat none 1 smoke01 smoke
+eurosat cond_channel 1 smoke01 smoke TRAINER.MAPLE.GATE_TYPE cond_channel
+eurosat kc 1 smoke01 smoke TRAINER.MAPLE.KC_TEXT_WEIGHT 25.0 TRAINER.MAPLE.KC_IMAGE_WEIGHT 10.0 TRAINER.MAPLE.KC_LOGIT_WEIGHT 1.0
+eurosat cond_channel_kc 1 smoke01 smoke TRAINER.MAPLE.GATE_TYPE cond_channel TRAINER.MAPLE.KC_TEXT_WEIGHT 25.0 TRAINER.MAPLE.KC_IMAGE_WEIGHT 10.0 TRAINER.MAPLE.KC_LOGIT_WEIGHT 1.0
+eurosat none_clip 1 smoke01 smoke TRAINER.MAPLE.GRAD_CLIP 10.0
+eurosat kc_rw 1 smoke02 smoke TRAINER.MAPLE.KC_TEXT_WEIGHT 25.0 TRAINER.MAPLE.KC_IMAGE_WEIGHT 10.0 TRAINER.MAPLE.KC_LOGIT_WEIGHT 1.0 TRAINER.MAPLE.KC_REWEIGHT teacher_conf

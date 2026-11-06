@@ -107,8 +107,8 @@ KC 的基本形式与系数来自 PromptSRC，原创部分只是按样本可信�
 | 编号 | 内容 | 状态 |
 |---|---|---|
 | 图 1 | MaPLe + 可信度加权 KC 结构图 | 待画 |
-| 图 2 | Aircraft 五种子 × 四方法 HM 散点（标出崩溃） | 数据已有 |
-| 图 3 | 门控各层 mean\|g−1\|（静态 D3 轨迹 + 条件门控统计） | 数据已有 |
+| 图 2 | Aircraft 五种子 × 四方法 HM 散点（标出崩溃） | 已画：docs/figures/fig_aircraft_stability.{png,pdf} |
+| 图 3 | 条件门控各层 mean|g−1|（对数刻度） | 已画：docs/figures/fig_gate_deviation.{png,pdf} |
 | 表 1 | 复现 vs 原论文 | 已有 |
 | 表 2 | 静态门控六数据集 | 已有 |
 | 表 3 | 主结果（含 kc_rw） | 已有（RESULTS_V2） |

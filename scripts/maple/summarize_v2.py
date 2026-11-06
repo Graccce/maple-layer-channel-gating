@@ -35,7 +35,9 @@ def collect(roots):
                 correct = re.findall(r'\* correct: ([0-9,]+)', text)
                 if len(total) != 1 or len(correct) != 1:
                     raise RuntimeError(f'Expected one evaluation in {seed_dir}/test_{subset}')
-                row[field] = 100.0 * int(correct[0].replace(',', '')) / int(total[0].replace(',', ''))
+                c, t = int(correct[0].replace(',', '')), int(total[0].replace(',', ''))
+                row[field] = 100.0 * c / t
+                row[f'{subset}_correct_total'] = [c, t]
             b, n = row['base_accuracy'], row['novel_accuracy']
             row['harmonic_mean'] = 2 * b * n / (b + n) if b + n else 0.0
             runs[key] = row
@@ -63,6 +65,9 @@ def summarize(runs, seeds=None):
             'hm': stats([r['harmonic_mean'] for r in by_seed.values()]),
             'delta_hm_vs_none': stats(paired) if paired else None,
             'per_seed_hm': {s: by_seed[s]['harmonic_mean'] for s in sorted(by_seed)},
+            'per_seed': {s: {k: by_seed[s].get(k) for k in (
+                'base_accuracy', 'novel_accuracy', 'harmonic_mean', 'base_correct_total', 'new_correct_total',
+                'training_seconds', 'peak_allocated_bytes')} for s in sorted(by_seed)},
             'trainable_parameters': next(iter(by_seed.values())).get('trainable_parameters'),
         }
     return table

@@ -2,7 +2,7 @@
 
 - Keep `TRAINER.MAPLE.GATE_TYPE` defaulting to `none`.
 - Preserve upstream MaPLe trainable parameters and CLIP freezing.
-- Gates are static learned parameters shared over samples, not input-conditioned gates.
+- `scalar`/`channel` gates are static learned parameters shared over samples. Input-conditioned gates exist only as the opt-in phase-2 `cond_*` GATE_TYPEs (see docs/EXPERIMENT_PLAN_V2.md); never make them the default.
 - Never silently cross-load none/scalar/channel or legacy gate checkpoints.
 - Keep the upstream fixture pinned; never replace baseline references with current HEAD.
 - Run `python scripts/check_repository.py` and `python -m unittest discover -s tests -v` after relevant changes.

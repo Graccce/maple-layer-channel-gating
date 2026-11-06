@@ -1,0 +1,11 @@
+# FGVCAircraft stability: gradient clipping (threshold fixed in EXPERIMENT_PLAN_V2.md)
+fgvc_aircraft none_clip 1 formal_v2_01 formal TRAINER.MAPLE.GRAD_CLIP 10.0
+fgvc_aircraft channel_clip 1 formal_v2_01 formal TRAINER.MAPLE.GATE_TYPE channel TRAINER.MAPLE.GRAD_CLIP 10.0
+fgvc_aircraft none_clip 2 formal_v2_01 formal TRAINER.MAPLE.GRAD_CLIP 10.0
+fgvc_aircraft channel_clip 2 formal_v2_01 formal TRAINER.MAPLE.GATE_TYPE channel TRAINER.MAPLE.GRAD_CLIP 10.0
+fgvc_aircraft none_clip 3 formal_v2_01 formal TRAINER.MAPLE.GRAD_CLIP 10.0
+fgvc_aircraft channel_clip 3 formal_v2_01 formal TRAINER.MAPLE.GATE_TYPE channel TRAINER.MAPLE.GRAD_CLIP 10.0
+fgvc_aircraft none_clip 4 formal_v2_01 formal TRAINER.MAPLE.GRAD_CLIP 10.0
+fgvc_aircraft channel_clip 4 formal_v2_01 formal TRAINER.MAPLE.GATE_TYPE channel TRAINER.MAPLE.GRAD_CLIP 10.0
+fgvc_aircraft none_clip 5 formal_v2_01 formal TRAINER.MAPLE.GRAD_CLIP 10.0
+fgvc_aircraft channel_clip 5 formal_v2_01 formal TRAINER.MAPLE.GATE_TYPE channel TRAINER.MAPLE.GRAD_CLIP 10.0
