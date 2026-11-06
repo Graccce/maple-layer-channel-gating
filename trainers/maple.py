@@ -365,7 +365,7 @@ class MaPLe(TrainerX):
         self._zs_text = (text / text.norm(dim=-1, keepdim=True)).float()
         print(f"Zero-shot consistency teacher ready ({len(prompts)} classes, template {template!r})")
 
-    def _consistency_loss(self, image, logits, image_features, text_features):
+    def _consistency_loss(self, image, label, logits, image_features, text_features):
         m = self.cfg.TRAINER.MAPLE
         if getattr(self, "_zs_teacher", None) is None:
             self._build_zero_shot_teacher()
@@ -373,24 +373,40 @@ class MaPLe(TrainerX):
             zs_image = self._zs_teacher.encode_image(image.type(self._zs_teacher.dtype)).float()
             zs_image = zs_image / zs_image.norm(dim=-1, keepdim=True)
             zs_logits = self._zs_teacher.logit_scale.exp().float() * zs_image @ self._zs_text.t()
+        if m.KC_REWEIGHT == "teacher_conf":
+            # Teacher reliability from training labels only: w_i = p_zs(y_i | x_i). Sample-wise terms
+            # are weighted per image; the class-level text term uses the running mean of w.
+            with torch.no_grad():
+                w = F.softmax(zs_logits, dim=1).gather(1, label[:, None]).squeeze(1)
+                self._kc_w_sum = getattr(self, "_kc_w_sum", 0.0) + w.sum().item()
+                self._kc_w_count = getattr(self, "_kc_w_count", 0) + w.numel()
+                text_scale = self._kc_w_sum / self._kc_w_count
+        elif m.KC_REWEIGHT == "none":
+            w, text_scale = torch.ones_like(label, dtype=torch.float32), 1.0
+        else:
+            raise ValueError("TRAINER.MAPLE.KC_REWEIGHT must be none or teacher_conf")
         parts = {}
         if m.KC_TEXT_WEIGHT > 0:
-            parts["kc_text"] = m.KC_TEXT_WEIGHT * F.l1_loss(text_features.float(), self._zs_text)
+            parts["kc_text"] = m.KC_TEXT_WEIGHT * text_scale * F.l1_loss(text_features.float(), self._zs_text)
         if m.KC_IMAGE_WEIGHT > 0:
-            parts["kc_image"] = m.KC_IMAGE_WEIGHT * F.l1_loss(image_features.float(), zs_image)
+            per_image = (image_features.float() - zs_image).abs().mean(dim=1)
+            parts["kc_image"] = m.KC_IMAGE_WEIGHT * (w * per_image).mean()
         if m.KC_LOGIT_WEIGHT > 0:
-            parts["kc_logit"] = m.KC_LOGIT_WEIGHT * F.kl_div(
-                F.log_softmax(logits.float(), dim=1), F.log_softmax(zs_logits, dim=1),
-                reduction="sum", log_target=True) / logits.numel()
+            per_image = F.kl_div(F.log_softmax(logits.float(), dim=1), F.log_softmax(zs_logits, dim=1),
+                                 reduction="none", log_target=True).sum(dim=1) / logits.shape[1]
+            parts["kc_logit"] = m.KC_LOGIT_WEIGHT * (w * per_image).mean()
+        if m.KC_REWEIGHT != "none":
+            parts["kc_w"] = w.mean().detach()
         return parts
 
     def _compute_loss(self, image, label):
         if not self._consistency_enabled():
             return self.model(image, label), {}
         logits, image_features, text_features = self.model(image, label, return_features=True)
-        parts = self._consistency_loss(image, logits, image_features, text_features)
+        parts = self._consistency_loss(image, label, logits, image_features, text_features)
         ce = F.cross_entropy(logits, label)
-        return ce + sum(parts.values()), {"ce": ce.item(), **{k: v.item() for k, v in parts.items()}}
+        loss = ce + sum(v for k, v in parts.items() if k != "kc_w")
+        return loss, {"ce": ce.item(), **{k: float(v) for k, v in parts.items()}}
 
     def _grad_norm(self):
         """Measure (and optionally clip) the trainable gradient norm; GRAD_CLIP 0 = off."""

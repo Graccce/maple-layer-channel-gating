@@ -109,6 +109,7 @@ def extend_cfg(cfg):
     cfg.TRAINER.MAPLE.KC_TEXT_WEIGHT = 0.0
     cfg.TRAINER.MAPLE.KC_IMAGE_WEIGHT = 0.0
     cfg.TRAINER.MAPLE.KC_LOGIT_WEIGHT = 0.0
+    cfg.TRAINER.MAPLE.KC_REWEIGHT = "none"  # none | teacher_conf (weight by zero-shot p(y|x) on train images)
     cfg.TRAINER.MAPLE.GRAD_CLIP = 0.0  # max global grad norm, 0 = off
     cfg.TRAINER.MAPLE.N_CTX = 2  # number of context vectors
     cfg.TRAINER.MAPLE.CTX_INIT = "a photo of a"  # initialization words

@@ -98,6 +98,7 @@ class ConditionalGateTests(unittest.TestCase):
         m = c.TRAINER.MAPLE
         self.assertEqual((m.KC_TEXT_WEIGHT, m.KC_IMAGE_WEIGHT, m.KC_LOGIT_WEIGHT, m.GRAD_CLIP), (0, 0, 0, 0))
         self.assertEqual(m.GATE_RANK, 32)
+        self.assertEqual(m.KC_REWEIGHT, 'none')
 
 
 if __name__ == '__main__':
